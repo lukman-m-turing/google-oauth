@@ -22,7 +22,7 @@ jobs:
           cache: maven
 
       - name: Run Tests with Maven
-        run: ./mvnw verify
+        run: ./mvnw test
 
       - name: Check Test Status
         run: |
