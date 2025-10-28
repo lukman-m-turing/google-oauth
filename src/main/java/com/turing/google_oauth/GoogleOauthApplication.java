@@ -1,13 +1,13 @@
-package com.turing.serious_oauth;
+package com.turing.google_oauth;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class SeriousOauthApplication {
+public class GoogleOauthApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(SeriousOauthApplication.class, args);
+		SpringApplication.run(GoogleOauthApplication.class, args);
 	}
 
 }

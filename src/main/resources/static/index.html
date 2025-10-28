@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Home Page</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="login.js"></script>
+    <style>
+        /*all SVG icons by https://icons8.com*/
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        /* style the container */
+        .container {
+            position: relative;
+            border-radius: 5px;
+            padding: 10px 0 10px 0;
+        }
+
+        #layout {
+            width: 50%;
+            margin: 0 auto;
+        }
+
+        #sign-in-buttons > * {
+            margin: 10px 0;
+        }
+
+        #signup-buttons > * {
+            margin: 10px 0;
+        }
+
+        /*Sign Up/In with Google **************************************************/
+        .google-btn {
+            transition: background-color .3s, box-shadow .3s;
+
+            padding: 12px 16px 12px 40px;
+            border: none;
+            border-radius: 3px;
+            box-shadow: 0 -1px 0 rgba(0, 0, 0, .04), 0 1px 1px rgba(0, 0, 0, .25);
+
+            color: #757575;
+            font-size: 14px;
+            font-weight: 500;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+
+            background-image: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIj48cGF0aCBkPSJNMTcuNiA5LjJsLS4xLTEuOEg5djMuNGg0LjhDMTMuNiAxMiAxMyAxMyAxMiAxMy42djIuMmgzYTguOCA4LjggMCAwIDAgMi42LTYuNnoiIGZpbGw9IiM0Mjg1RjQiIGZpbGwtcnVsZT0ibm9uemVybyIvPjxwYXRoIGQ9Ik05IDE4YzIuNCAwIDQuNS0uOCA2LTIuMmwtMy0yLjJhNS40IDUuNCAwIDAgMS04LTIuOUgxVjEzYTkgOSAwIDAgMCA4IDV6IiBmaWxsPSIjMzRBODUzIiBmaWxsLXJ1bGU9Im5vbnplcm8iLz48cGF0aCBkPSJNNCAxMC43YTUuNCA1LjQgMCAwIDEgMC0zLjRWNUgxYTkgOSAwIDAgMCAwIDhsMy0yLjN6IiBmaWxsPSIjRkJCQzA1IiBmaWxsLXJ1bGU9Im5vbnplcm8iLz48cGF0aCBkPSJNOSAzLjZjMS4zIDAgMi41LjQgMy40IDEuM0wxNSAyLjNBOSA5IDAgMCAwIDEgNWwzIDIuNGE1LjQgNS40IDAgMCAxIDUtMy43eiIgZmlsbD0iI0VBNDMzNSIgZmlsbC1ydWxlPSJub256ZXJvIi8+PHBhdGggZD0iTTAgMGgxOHYxOEgweiIvPjwvZz48L3N2Zz4=);
+            background-color: white;
+            background-repeat: no-repeat;
+            background-position: 12px 11px;
+        }
+
+        :active {
+            background-color: #eeeeee;
+        }
+
+        :focus {
+            outline: none;
+            box-shadow:
+                    0 -1px 0 rgba(0, 0, 0, .04),
+                    0 2px 4px rgba(0, 0, 0, .25),
+                    0 0 0 3px #c8dafc;
+        }
+
+        button:hover{
+            cursor: pointer;
+            box-shadow: 0 -1px 0 rgba(0, 0, 0, .04), 0 2px 4px rgba(0, 0, 0, .25);
+
+        }
+
+        /*Sign Up/In with Google End **************************************************/
+
+        /* Two-column layout */
+        .col {
+            float: left;
+            width: 50%;
+            padding: 0 50px;
+            margin: 6px auto auto;
+        }
+
+        /* Clear floats after the columns */
+        .row:after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+
+        /* vertical line */
+        .vl {
+            position: absolute;
+            left: 50%;
+            transform: translate(-50%);
+            border: 2px solid #ddd;
+            height: 380px;
+        }
+
+        /* horizontal line */
+        .hl {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%);
+            border: 2px solid #ddd;
+            width: 275px;
+            margin-top: 50px;
+        }
+
+        /* text inside the vertical line */
+        .vl-innertext {
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #f1f1f1;
+            border: 1px solid #ccc;
+            border-radius: 50%;
+            padding: 8px 10px;
+        }
+
+        /* text inside the vertical line */
+        .hl-innertext {
+            position: absolute;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #f1f1f1;
+            border: 1px solid #ccc;
+            border-radius: 50%;
+            padding: 8px 10px;
+        }
+
+        /* Responsive layout - when the screen is less than 650px wide, make the two columns stack on top of each other instead of next to each other */
+        @media screen and (max-width: 650px) {
+            .col {
+                width: 100%;
+                margin-top: 50px;
+            }
+
+            /* hide the vertical line */
+            .vl {
+                display: none;
+            }
+        }
+
+        /* When the screen is greater than 650px wide*/
+        @media screen and (min-width: 650px) {
+            /* hide horizontal line*/
+            .hl {
+                visibility: hidden;
+            }
+        }
+    </style>
+</head>
+<body style="background-color: #f2f2f2;">
+<div class="container">
+    <div id="layout" class="row">
+        <h2 style="text-align:center;color:#009900;">Serious Google OAuth</h2>
+        <p>This application allows you Sign In/Up with Google and access your YouTube playlists.</p>
+        <p style="text-align:center">Isn't that awesome?</p>
+        <div class="vl">
+            <span class="vl-innertext">or</span>
+        </div>
+
+        <div class="hl">
+            <span class="hl-innertext">or</span>
+        </div>
+
+        <div id="sign-in-buttons" class="col">
+            <button type="submit" value="http://localhost:8080/auth/initialize-flow"
+                    onclick="socialSignIn(this.value)" class="google-btn" >
+                Sign In
+            </button>
+        </div>
+
+        <div id="signup-buttons" class="col">
+            <button type="submit" value="http://localhost:8080/auth/initialize-flow"
+                    onclick="socialSignUp(this.value)" class="google-btn" >
+                Sign Up
+            </button>
+        </div>
+
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Profile Page</title>
+    <script src="profile.js"></script>
+    <style>
+        /*all SVG icons by https://icons8.com*/
+        .card {
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+            max-width: 300px;
+            margin: auto;
+            text-align: center;
+        }
+
+        .title {
+            color: grey;
+            font-size: 18px;
+        }
+
+        button {
+            border: none;
+            outline: 0;
+            display: inline-block;
+            padding: 8px;
+            color: white;
+            background-color: #266003;
+            text-align: center;
+            cursor: pointer;
+            width: 100%;
+            font-size: 18px;
+        }
+
+        a {
+            text-decoration: none;
+            font-size: 22px;
+            color: black;
+        }
+
+        button:hover, a:hover {
+            opacity: 0.7;
+        }
+
+        #youtube-button {
+            line-height: 18px;
+            padding: 12px 16px 12px 40px;
+            width: 150px;
+            font-size: 12pt;
+            margin: 20px 40px auto auto;
+            position: absolute;
+            top: 0;
+            right: 0;
+            border-radius: 5px;
+            box-shadow: 0 -1px 0 rgba(0, 0, 0, .04), 0 1px 1px rgba(0, 0, 0, .25);
+
+            background-image: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciICB2aWV3Qm94PSIwIDAgNDggNDgiIHdpZHRoPSI0OHB4IiBoZWlnaHQ9IjQ4cHgiPjxwYXRoIGZpbGw9IiNGRjNEMDAiIGQ9Ik00My4yLDMzLjljLTAuNCwyLjEtMi4xLDMuNy00LjIsNGMtMy4zLDAuNS04LjgsMS4xLTE1LDEuMWMtNi4xLDAtMTEuNi0wLjYtMTUtMS4xYy0yLjEtMC4zLTMuOC0xLjktNC4yLTRDNC40LDMxLjYsNCwyOC4yLDQsMjRjMC00LjIsMC40LTcuNiwwLjgtOS45YzAuNC0yLjEsMi4xLTMuNyw0LjItNEMxMi4zLDkuNiwxNy44LDksMjQsOWM2LjIsMCwxMS42LDAuNiwxNSwxLjFjMi4xLDAuMywzLjgsMS45LDQuMiw0YzAuNCwyLjMsMC45LDUuNywwLjksOS45QzQ0LDI4LjIsNDMuNiwzMS42LDQzLjIsMzMuOXoiLz48cGF0aCBmaWxsPSIjRkZGIiBkPSJNMjAgMzFMMjAgMTcgMzIgMjR6Ii8+PC9zdmc+);
+            background-repeat: no-repeat;
+            background-position: 5px 5px;
+        }
+
+        #users-statistics {
+            padding: 12px 12px 12px 12px;
+            position: absolute;
+            top: 40px;
+            color: #009900;
+            font-family: arial, sans-serif;
+            border-collapse: collapse;
+        }
+
+        td, th {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #dddddd;
+        }
+    </style>
+</head>
+<body style="background-color: #f2f2f2;">
+<a href="index.html" style="color:#009900;">Home</a>
+<div id="statistics">
+    <table id="users-statistics">
+        <tr>
+            <th>Users Statistics</th>
+            <th>Count</th>
+        </tr>
+        <tr>
+            <td>Total Number of Users</td>
+            <td id="totalUsers"></td>
+        </tr>
+        <tr>
+            <td>Verified Users</td>
+            <td id="totalVerified"></td>
+        </tr>
+        <tr>
+            <td>Users connected to Youtube</td>
+            <td id="totalOnYoutube"></td>
+        </tr>
+    </table>
+</div>
+
+<div class="card">
+    <img id="profile-picture" src="" alt="profile picture" style="width:100%">
+    <h1 id="full-name"></h1>
+    <p class="title">Course Author</p>
+    <p id="user-email"></p>
+    <p id="verified"></p>
+    <p><button>Profile</button></p>
+</div>
+
+<div id="connect-youtube">
+    <button id="youtube-button" type="submit" value="http://localhost:8080/auth/google/connect-youtube"
+            onclick=connectYoutube(this.value)>
+        Connect YouTube
+    </button>
+</div>
+</body>
+</html>
