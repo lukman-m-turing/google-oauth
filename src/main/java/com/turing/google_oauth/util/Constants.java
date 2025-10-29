@@ -7,5 +7,5 @@ public interface Constants {
     String RESPONSE_TYPE_LITERAL = "response_type";
     String SCOPE_LITERAL = "scope";
     String PROFILE_URL = "http://localhost:8080/profile.html";
-
+    String NIGERIA_TIME_ZONE_ID = "Africa/Lagos";
 }
