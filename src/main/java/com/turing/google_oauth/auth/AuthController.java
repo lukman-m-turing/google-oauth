@@ -17,7 +17,7 @@ public class AuthController {
 
     private final AuthService authService;
 
-    @GetMapping("initialize-flow")
+    @GetMapping("/initialize-flow")
     public ResponseEntity<Void> initializeAuthorizationCodeFlow() {
         URI authorizationCodeFlowUrl = authService.getCodeFlowInitializationUrl();
         return ResponseEntity.status(HttpStatus.SEE_OTHER)
