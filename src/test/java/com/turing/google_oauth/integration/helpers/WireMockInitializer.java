@@ -27,7 +27,8 @@ public class WireMockInitializer implements ApplicationContextInitializer<Config
                 "google.api.endpoint=" + getServerUrl("google"),
                 "google.authorization.endpoint=" + getServerUrl("auth-google"),
                 "google.oauth.client.id=" + ObjectMother.getClientId(),
-                "google.oauth.client.secret=" + ObjectMother.getClientSecret()
+                "google.oauth.client.secret=" + ObjectMother.getClientSecret(),
+                "google.oauth.client.redirect-url=" + ObjectMother.getClientRedirectUrl()
                 )
                 .applyTo(applicationContext);
 

@@ -30,6 +30,10 @@ public class ObjectMother {
         return RandomStringUtils.secure().nextAlphanumeric(40);
     }
 
+    public static String getClientRedirectUrl() {
+        return "http://localhost:8080/fake-redirect-url";
+    }
+
     public User getUserFor(String email) {
         User user = new User();
         user.email = email;
