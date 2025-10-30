@@ -1,32 +1,32 @@
 package com.turing.google_oauth.unit;
 
 import com.turing.google_oauth.auth.OAuth2StateService;
-import org.junit.jupiter.api.BeforeEach;
+import com.turing.google_oauth.auth.RedisClient;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.Clock;
-import java.time.Instant;
-import java.time.ZoneId;
 import java.util.Base64;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class OAuth2StateServiceTest {
 
-    OAuth2StateService stateService;
+    @Mock RedisClient redisClient;
 
-    @BeforeEach
-    void setup() {
-        Clock clock = Clock.fixed(Instant.now(), ZoneId.systemDefault());
-        stateService = new OAuth2StateService(clock);
-    }
+    @InjectMocks
+    OAuth2StateService stateService;
 
     @Test
     void testGenerateOAuth2State() {
+        doNothing().when(redisClient).cacheState(anyString());
         String state = stateService.generateOAuth2State();
 
         // 2. Should be URL-safe: only contains [A-Za-z0-9-_]
@@ -43,8 +43,18 @@ public class OAuth2StateServiceTest {
 
     @Test
     void testGenerateOAuth2StateUpdatesCache() {
+        doNothing().when(redisClient).cacheState(anyString());
+        when(redisClient.isStateValid(anyString())).thenReturn(true);
         String state = stateService.generateOAuth2State();
         assertTrue(stateService.isStateValid(state), "State was not cached");
+    }
+
+    @Test
+    void testDestroyState() {
+        String state = UUID.randomUUID().toString();
+        doNothing().when(redisClient).deleteState(state);
+        stateService.destroyState(state);
+        verify(redisClient).deleteState(state);
     }
 
 }
