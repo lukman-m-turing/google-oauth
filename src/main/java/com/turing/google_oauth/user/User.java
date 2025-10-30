@@ -31,6 +31,9 @@ public class User {
     @Column(name = "profile_picture_url")
     public String profilePictureUrl;
 
+    @Column(name = "oauth_access_token", columnDefinition = "TEXT")
+    public String oauthAccessToken;
+
     @CreationTimestamp
     @Column(name = "created_at")
     public LocalDateTime createdAt;
