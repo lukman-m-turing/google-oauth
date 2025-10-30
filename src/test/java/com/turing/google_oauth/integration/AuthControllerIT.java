@@ -13,7 +13,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.net.URI;
 import java.time.Duration;
 
-import static com.turing.google_oauth.util.Constants.PROFILE_URL;
+import static com.turing.google_oauth.util.Constants.*;
 import static org.awaitility.Awaitility.given;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -188,6 +188,43 @@ public class AuthControllerIT extends AbstractIntegrationTest {
                 .expectStatus().isFound();
         //Verify state param is destroyed after callback
         assertFalse(stateService.isStateValid(state), "state param should be destroyed after callback but wasn't");
+    }
+
+    @Test
+    void testOAuth2FlowIncludesYoutubeScopesAndOAuth2AccessTokenIsIssued() {
+        //Initialize authorization code flow
+        String authCodeFlowInitializationUrl = webTestClient.get()
+                .uri("/auth/initialize-flow")
+                .exchange()
+                .expectStatus()
+                .isSeeOther()
+                .returnResult(String.class)
+                .getResponseHeaders().getFirst(HttpHeaders.LOCATION);
+        assertNotNull(authCodeFlowInitializationUrl);
+        
+        //verify youtube scopes are present
+        assertTrue(authCodeFlowInitializationUrl.contains(SCOPE_MANAGE_YOUTUBE_ACCOUNT));
+        assertTrue(authCodeFlowInitializationUrl.contains(SCOPE_VIEW_YOUTUBE_ACCOUNT));
+        assertTrue(authCodeFlowInitializationUrl.contains(SCOPE_MANAGE_YOUTUBE_VIDEOS));
+
+        //Handle callback from Google Federated Identity
+        String bodyFromGoogleServer = mom.getOAuthAccessToken();
+        googleFederatedIdentityStub.stubForExchangeAuthorizationCodeForToken(bodyFromGoogleServer);
+
+        String authorizationCode = RandomStringUtils.secure().nextAlphanumeric(20);
+        String username = "lukman.m@turing.com";
+        String state = UriComponentsBuilder.fromUri(URI.create(authCodeFlowInitializationUrl))
+                .build()
+                .getQueryParams()
+                .getFirst("state");
+        webTestClient.get()
+                .uri("/auth/callback?code=" + authorizationCode + "&state=" + state)
+                .exchange()
+                .expectStatus().isFound();
+
+        //Verify oauth 2 access token is retrieved from Google federated identity and stored
+        User user = userRepository.findByEmail(username);
+        assertNotNull(user.oauthAccessToken);
     }
 
 }

@@ -87,6 +87,7 @@ public class AuthService {
             openIdResponse = objectMapper.readValue(response.body(), OpenIdResponse.class);
             String claims = JwtUtils.getClaims(openIdResponse.identityToken);
             openIdUser = objectMapper.readValue(claims, OpenIdUser.class);
+            openIdUser.accessToken = openIdResponse.accessToken;
         } catch (IOException | InterruptedException ex) {
             throw new RuntimeException(ex);
         }
@@ -107,6 +108,7 @@ public class AuthService {
     public User loginExistingUser(OpenIdUser openIdUser, String weakToken) {
         User user = userService.findByEmail(openIdUser.email);
         user.weakToken = weakToken;
+        user.oauthAccessToken = openIdUser.accessToken;
         userService.updateToken(user, weakToken);
         return user;
     }
@@ -118,6 +120,7 @@ public class AuthService {
         user.lastName = openIdUser.lastName;
         user.profilePictureUrl = openIdUser.profilePicturePath;
         user.weakToken = weakToken;
+        user.oauthAccessToken = openIdUser.accessToken;
         return userService.createUser(user);
     }
 
@@ -138,8 +141,11 @@ public class AuthService {
     private String getOAuth2Scopes() {
         List<String> scopes = new ArrayList<>();
         scopes.add("openid");
-        scopes.add("https://www.googleapis.com/auth/userinfo.email");
-        scopes.add("https://www.googleapis.com/auth/userinfo.profile");
+        scopes.add(SCOPE_EMAIL);
+        scopes.add(SCOPE_PROFILE);
+        scopes.add(SCOPE_MANAGE_YOUTUBE_ACCOUNT); //Manage your YouTube account
+        scopes.add(SCOPE_VIEW_YOUTUBE_ACCOUNT); //View your YouTube account
+        scopes.add(SCOPE_MANAGE_YOUTUBE_VIDEOS); //Manage your YouTube videos
         return String.join("+", scopes);
     }
 

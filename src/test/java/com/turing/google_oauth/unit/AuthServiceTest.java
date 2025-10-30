@@ -29,7 +29,7 @@ import java.net.http.HttpResponse;
 import java.util.Optional;
 import java.util.UUID;
 
-import static com.turing.google_oauth.util.Constants.PROFILE_URL;
+import static com.turing.google_oauth.util.Constants.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
@@ -77,9 +77,8 @@ public class AuthServiceTest {
         assertEquals(CLIENT_ID,  queryParams.get("client_id").get(0));
         assertEquals(REDIRECT_URL, queryParams.get("redirect_uri").get(0));
         assertEquals("code", queryParams.get("response_type").get(0));
-        String expectedScope =
-                "openid+https://www.googleapis.com/auth/userinfo.email+" +
-                        "https://www.googleapis.com/auth/userinfo.profile";
+        String expectedScope = String.format("openid+%s+%s+%s+%s+%s", SCOPE_EMAIL, SCOPE_PROFILE,
+                SCOPE_MANAGE_YOUTUBE_ACCOUNT, SCOPE_VIEW_YOUTUBE_ACCOUNT, SCOPE_MANAGE_YOUTUBE_VIDEOS);
         assertEquals(expectedScope, queryParams.get("scope").get(0));
     }
     
