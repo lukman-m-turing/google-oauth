@@ -1,6 +1,7 @@
 package com.turing.google_oauth.auth;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,15 +22,16 @@ public class AuthController {
     public ResponseEntity<Void> initializeAuthorizationCodeFlow() {
         URI authorizationCodeFlowUrl = authService.getCodeFlowInitializationUrl();
         return ResponseEntity.status(HttpStatus.SEE_OTHER)
+                .header(HttpHeaders.LOCATION, authorizationCodeFlowUrl.toString())
                 .location(authorizationCodeFlowUrl)
                 .build();
     }
 
     @GetMapping("/callback")
     public ResponseEntity<Void> handleAuthorizationCodeFlowCallback(
-            @RequestParam("code") String code
+            @RequestParam("code") String code, @RequestParam("state") String state
     ) {
-        URI profilePageUrl = authService.handleAuthCodeFlowCallback(code);
+        URI profilePageUrl = authService.handleAuthCodeFlowCallback(code, state);
         return ResponseEntity.status(HttpStatus.FOUND)
                 .location(profilePageUrl)
                 .build();

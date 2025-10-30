@@ -1,7 +1,6 @@
 package com.turing.google_oauth.integration.helpers.stubs;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
-import com.turing.google_oauth.util.Constants;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;

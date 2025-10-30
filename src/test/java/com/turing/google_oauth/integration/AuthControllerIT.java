@@ -7,13 +7,14 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URI;
 import java.time.Duration;
 
 import static com.turing.google_oauth.util.Constants.PROFILE_URL;
 import static org.awaitility.Awaitility.given;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class AuthControllerIT extends AbstractIntegrationTest {
 
@@ -29,23 +30,28 @@ public class AuthControllerIT extends AbstractIntegrationTest {
         //Make sure no user exists at start
         assertEquals(0, userRepository.count());
         //Initialize authorization code flow
-        //This step can be skipped as no real call to Google is made and mock server always returns a premeditated result
+        //This step can be skipped as no real call to Google is made, and mock server always returns a premeditated result
         String authCodeFlowInitializationUrl = webTestClient.get()
                 .uri("/auth/initialize-flow")
                 .exchange()
                 .expectStatus()
                 .isSeeOther()
                 .returnResult(String.class)
-                .getRequestHeaders().getFirst(HttpHeaders.LOCATION);
+                .getResponseHeaders().getFirst(HttpHeaders.LOCATION);
+        assertNotNull(authCodeFlowInitializationUrl);
 
-        //Handle callback from Google Federate Identity
+        //Handle callback from Google Federated Identity
         String bodyFromGoogleServer = mom.getOIDCIDToken();
         googleFederatedIdentityStub.stubForExchangeAuthorizationCodeForToken(bodyFromGoogleServer);
 
         String authorizationCode = RandomStringUtils.secure().nextAlphanumeric(20);
         String username = "lukman.m@turing.com";
+        String state = UriComponentsBuilder.fromUri(URI.create(authCodeFlowInitializationUrl))
+                .build()
+                .getQueryParams()
+                .getFirst("state");
         String profileUrl = webTestClient.get()
-                .uri("/auth/callback?code=" + authorizationCode)
+                .uri("/auth/callback?code=" + authorizationCode + "&state=" + state)
                 .exchange()
                 .expectStatus().isFound()
                 .returnResult(String.class)
@@ -74,15 +80,20 @@ public class AuthControllerIT extends AbstractIntegrationTest {
                 .expectStatus()
                 .isSeeOther()
                 .returnResult(String.class)
-                .getRequestHeaders().getFirst(HttpHeaders.LOCATION);
+                .getResponseHeaders().getFirst(HttpHeaders.LOCATION);
+        assertNotNull(authCodeFlowInitializationUrl);
 
         //Handle callback from Google Federate Identity
         String bodyFromGoogleServer = mom.getOIDCIDToken();
         googleFederatedIdentityStub.stubForExchangeAuthorizationCodeForToken(bodyFromGoogleServer);
 
         String authorizationCode = RandomStringUtils.secure().nextAlphanumeric(20);
+        String state = UriComponentsBuilder.fromUri(URI.create(authCodeFlowInitializationUrl))
+                .build()
+                .getQueryParams()
+                .getFirst("state");
         String profileUrl = webTestClient.get()
-                .uri("/auth/callback?code=" + authorizationCode)
+                .uri("/auth/callback?code=" + authorizationCode + "&state=" + state)
                 .exchange()
                 .expectStatus().isFound()
                 .returnResult(String.class)
@@ -104,18 +115,24 @@ public class AuthControllerIT extends AbstractIntegrationTest {
         assertTrue(userRepository.existsByEmail(existingUser.email));
 
         //Initialize authorization code flow
-        //This step can be skipped as no real call to Google is made and mock server always returns a premeditated result
+        //This step can be skipped as no real call to Google is made, and mock server always returns a premeditated result
         String authCodeFlowInitializationUrl = webTestClient.get()
                 .uri("/auth/initialize-flow")
                 .exchange()
                 .expectStatus()
                 .isSeeOther()
                 .returnResult(String.class)
-                .getRequestHeaders().getFirst(HttpHeaders.LOCATION);
+                .getResponseHeaders().getFirst(HttpHeaders.LOCATION);
+        assertNotNull(authCodeFlowInitializationUrl);
 
         //Handle callback from Google Federate Identity
         String bodyFromGoogleServer = mom.getOIDCIDToken();
         googleFederatedIdentityStub.stubForExchangeAuthorizationCodeForTokenWithDelayedResponse(bodyFromGoogleServer);
+
+        String state = UriComponentsBuilder.fromUri(URI.create(authCodeFlowInitializationUrl))
+                .build()
+                .getQueryParams()
+                .getFirst("state");
 
         //Using awaitility, make two attempts on same API. First one should fail, second should succeed and get result
         given()
@@ -124,7 +141,7 @@ public class AuthControllerIT extends AbstractIntegrationTest {
                 .untilAsserted(() -> {
                     String authorizationCode = RandomStringUtils.secure().nextAlphanumeric(20);
                     String profileUrl = webTestClient.get()
-                            .uri("/auth/callback?code=" + authorizationCode)
+                            .uri("/auth/callback?code=" + authorizationCode + "&state=" + state)
                             .exchange()
                             .expectStatus().isFound()
                             .returnResult(String.class)
@@ -135,6 +152,17 @@ public class AuthControllerIT extends AbstractIntegrationTest {
                     assertEquals(1, userRepository.count());
                     assertTrue(userRepository.existsByEmail(existingUser.email));
                 });
+    }
+
+    @Test
+    void testThrowsBadRequestExceptionForInvalidOrExpiredState() {
+        String state = RandomStringUtils.secure().nextAlphanumeric(20);
+        webTestClient.get()
+                .uri("/auth/callback?code=12345&state=" + state)
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.message").isEqualTo("Invalid or missing state parameter");
     }
 
 }

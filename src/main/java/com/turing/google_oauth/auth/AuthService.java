@@ -3,6 +3,7 @@ package com.turing.google_oauth.auth;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.turing.google_oauth.auth.model.OpenIdResponse;
 import com.turing.google_oauth.auth.model.OpenIdUser;
+import com.turing.google_oauth.exception.BadRequestException;
 import com.turing.google_oauth.user.User;
 import com.turing.google_oauth.user.UserService;
 import com.turing.google_oauth.util.JwtUtils;
@@ -33,6 +34,7 @@ public class AuthService {
     private final ObjectMapper objectMapper;
     private final UserService userService;
     private final HttpClient httpClient;
+    private final OAuth2StateService oAuth2StateService;
 
     @Value("${google.authorization.endpoint}")
     String authorizationEndpoint;
@@ -45,25 +47,28 @@ public class AuthService {
     @Value("${google.api.endpoint}")
     String googleTokenEndpoint;
 
-
     public URI getCodeFlowInitializationUrl() {
         String oauth2Scopes = getOAuth2Scopes();
+        String state = oAuth2StateService.generateOAuth2State();
         return UriComponentsBuilder.fromUri(URI.create(authorizationEndpoint))
                 .queryParam(CLIENT_ID_LITERAL, clientId)
                 .queryParam(REDIRECT_URI_LITERAL, redirectUrl)
                 .queryParam(RESPONSE_TYPE_LITERAL, "code")
                 .queryParam(SCOPE_LITERAL, oauth2Scopes)
+                .queryParam(STATE_LITERAL, state)
                 .build()
                 .toUri();
     }
 
-    public URI handleAuthCodeFlowCallback(String code) {
+    public URI handleAuthCodeFlowCallback(String code, String state) {
+        if (!oAuth2StateService.isStateValid(state)) throw new BadRequestException("Invalid or missing state parameter");
+
         String formData = buildFormData(
-                "client_id", clientId,
-                "client_secret", clientSecret,
+                CLIENT_ID_LITERAL, clientId,
+                CLIENT_SECRET_LITERAL, clientSecret,
                 "grant_type", "authorization_code",
                 "code", code,
-                "redirect_uri", redirectUrl);
+                REDIRECT_URI_LITERAL, redirectUrl);
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(googleTokenEndpoint + "/token"))
