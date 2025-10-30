@@ -1,5 +1,6 @@
 package com.turing.google_oauth.integration;
 
+import com.turing.google_oauth.auth.OAuth2StateService;
 import com.turing.google_oauth.integration.helpers.stubs.GoogleFederatedIdentityStub;
 import com.turing.google_oauth.user.User;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -19,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class AuthControllerIT extends AbstractIntegrationTest {
 
     @Autowired GoogleFederatedIdentityStub googleFederatedIdentityStub;
+    @Autowired OAuth2StateService stateService;
 
     @AfterEach
     void tearDown() {
@@ -30,7 +32,6 @@ public class AuthControllerIT extends AbstractIntegrationTest {
         //Make sure no user exists at start
         assertEquals(0, userRepository.count());
         //Initialize authorization code flow
-        //This step can be skipped as no real call to Google is made, and mock server always returns a premeditated result
         String authCodeFlowInitializationUrl = webTestClient.get()
                 .uri("/auth/initialize-flow")
                 .exchange()
@@ -73,7 +74,6 @@ public class AuthControllerIT extends AbstractIntegrationTest {
         assertTrue(userRepository.existsByEmail(existingUser.email));
 
         //Initialize authorization code flow
-        //This step can be skipped as no real call to Google is made and mock server always returns a premeditated result
         String authCodeFlowInitializationUrl = webTestClient.get()
                 .uri("/auth/initialize-flow")
                 .exchange()
@@ -110,12 +110,7 @@ public class AuthControllerIT extends AbstractIntegrationTest {
         User existingUser = mom.getUserFor("lukman.m@turing.com");
         userRepository.saveAndFlush(existingUser);
 
-        //Verify user exists on database
-        assertEquals(1, userRepository.count());
-        assertTrue(userRepository.existsByEmail(existingUser.email));
-
         //Initialize authorization code flow
-        //This step can be skipped as no real call to Google is made, and mock server always returns a premeditated result
         String authCodeFlowInitializationUrl = webTestClient.get()
                 .uri("/auth/initialize-flow")
                 .exchange()
@@ -163,6 +158,36 @@ public class AuthControllerIT extends AbstractIntegrationTest {
                 .expectStatus().isBadRequest()
                 .expectBody()
                 .jsonPath("$.message").isEqualTo("Invalid or missing state parameter");
+    }
+
+    @Test
+    void testOAuthStateParamIsDestroyedAfterCallback() {
+        //Initialize authorization code flow
+        String authCodeFlowInitializationUrl = webTestClient.get()
+                .uri("/auth/initialize-flow")
+                .exchange()
+                .expectStatus()
+                .isSeeOther()
+                .returnResult(String.class)
+                .getResponseHeaders().getFirst(HttpHeaders.LOCATION);
+        assertNotNull(authCodeFlowInitializationUrl);
+
+        //Handle callback from Google Federated Identity
+        String bodyFromGoogleServer = mom.getOIDCIDToken();
+        googleFederatedIdentityStub.stubForExchangeAuthorizationCodeForToken(bodyFromGoogleServer);
+
+        String authorizationCode = RandomStringUtils.secure().nextAlphanumeric(20);
+        String state = UriComponentsBuilder.fromUri(URI.create(authCodeFlowInitializationUrl))
+                .build()
+                .getQueryParams()
+                .getFirst("state");
+
+        webTestClient.get()
+                .uri("/auth/callback?code=" + authorizationCode + "&state=" + state)
+                .exchange()
+                .expectStatus().isFound();
+        //Verify state param is destroyed after callback
+        assertFalse(stateService.isStateValid(state), "state param should be destroyed after callback but wasn't");
     }
 
 }
