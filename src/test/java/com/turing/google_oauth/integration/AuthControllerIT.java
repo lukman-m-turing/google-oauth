@@ -227,4 +227,89 @@ public class AuthControllerIT extends AbstractIntegrationTest {
         assertNotNull(user.oauthAccessToken);
     }
 
+    @Test
+    void testOAuth2FlowIncludesOAuth2RefreshToken() {
+        //Initialize authorization code flow
+        String authCodeFlowInitializationUrl = webTestClient.get()
+                .uri("/auth/initialize-flow")
+                .exchange()
+                .expectStatus()
+                .isSeeOther()
+                .returnResult(String.class)
+                .getResponseHeaders().getFirst(HttpHeaders.LOCATION);
+        assertNotNull(authCodeFlowInitializationUrl);
+
+        String refresh_token_request = UriComponentsBuilder.fromUri(URI.create(authCodeFlowInitializationUrl))
+                .build()
+                .getQueryParams()
+                .getFirst("access_type");
+
+        //Verify authorization code flow initialization request contains refresh token request 'access_type=offline'
+        assertEquals("offline", refresh_token_request);
+
+        //Handle callback from Google Federated Identity
+        String bodyFromGoogleServer = mom.getOAuthAccessAndRefreshTokens();
+        googleFederatedIdentityStub.stubForExchangeAuthorizationCodeForToken(bodyFromGoogleServer);
+
+        String authorizationCode = RandomStringUtils.secure().nextAlphanumeric(20);
+        String username = "lukman.m@turing.com";
+        String state = UriComponentsBuilder.fromUri(URI.create(authCodeFlowInitializationUrl))
+                .build()
+                .getQueryParams()
+                .getFirst("state");
+        webTestClient.get()
+                .uri("/auth/callback?code=" + authorizationCode + "&state=" + state)
+                .exchange()
+                .expectStatus().isFound();
+
+        //Verify oauth 2 refresh token is retrieved from Google federated identity and stored
+        User user = userRepository.findByEmail(username);
+        assertNotNull(user.oauthRefreshToken);
+    }
+
+    @Test
+    void testOAuth2FlowDoesNotOverrideRefreshTokenIfNoNewOneIsIssued() {
+        User existingUser = mom.getUserFor("lukman.m@turing.com");
+        String storedRefreshToken = "dummy-refresh-token";
+        existingUser.oauthRefreshToken = storedRefreshToken;
+        userRepository.saveAndFlush(existingUser);
+
+        //Initialize authorization code flow
+        String authCodeFlowInitializationUrl = webTestClient.get()
+                .uri("/auth/initialize-flow")
+                .exchange()
+                .expectStatus()
+                .isSeeOther()
+                .returnResult(String.class)
+                .getResponseHeaders().getFirst(HttpHeaders.LOCATION);
+        assertNotNull(authCodeFlowInitializationUrl);
+
+        String refresh_token_request = UriComponentsBuilder.fromUri(URI.create(authCodeFlowInitializationUrl))
+                .build()
+                .getQueryParams()
+                .getFirst("access_type");
+
+        //Verify authorization code flow initialization request contains refresh token request 'access_type=offline'
+        assertEquals("offline", refresh_token_request);
+
+        //Handle callback from Google Federated Identity
+        String bodyFromGoogleServer = mom.getOAuthAccessToken(); //Does not include refresh token
+        googleFederatedIdentityStub.stubForExchangeAuthorizationCodeForToken(bodyFromGoogleServer);
+
+        String authorizationCode = RandomStringUtils.secure().nextAlphanumeric(20);
+        String username = "lukman.m@turing.com";
+        String state = UriComponentsBuilder.fromUri(URI.create(authCodeFlowInitializationUrl))
+                .build()
+                .getQueryParams()
+                .getFirst("state");
+        webTestClient.get()
+                .uri("/auth/callback?code=" + authorizationCode + "&state=" + state)
+                .exchange()
+                .expectStatus().isFound();
+
+        //Verify stored oauth 2.0 refresh token is not overwritten
+        User user = userRepository.findByEmail(username);
+        assertEquals(storedRefreshToken, user.oauthRefreshToken);
+    }
+
 }
