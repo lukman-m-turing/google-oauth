@@ -65,9 +65,6 @@ public class AuthService {
     public URI handleAuthCodeFlowCallback(String code, String state) {
         if (!oAuth2StateService.isStateValid(state)) throw new BadRequestException("Invalid or missing state parameter");
 
-        //State is no longer needed and should be cleared
-        oAuth2StateService.destroyState(state);
-
         String formData = buildFormData(
                 CLIENT_ID_LITERAL, clientId,
                 CLIENT_SECRET_LITERAL, clientSecret,
@@ -102,6 +99,9 @@ public class AuthService {
         } else {
             user = registerNewUser(openIdUser, weakToken);
         }
+
+        //State is no longer needed and should be cleared
+        oAuth2StateService.destroyState(state);
         return UriComponentsBuilder.fromUriString(PROFILE_URL)
                 .queryParam("token", weakToken)
                 .build()
