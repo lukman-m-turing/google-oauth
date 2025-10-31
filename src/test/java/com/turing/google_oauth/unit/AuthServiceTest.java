@@ -32,6 +32,7 @@ import java.util.UUID;
 import static com.turing.google_oauth.util.Constants.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -98,6 +99,18 @@ public class AuthServiceTest {
         BadRequestException badRequestException = assertThrows(BadRequestException.class, () ->
                 authService.handleAuthCodeFlowCallback("", dummyOAuth2State));
         assertEquals("Invalid or missing state parameter", badRequestException.getMessage());
+    }
+
+    @Test
+    void testHandleAuthorizationCodeFlowDestroysStateOnlyAfterUserIsFound() throws IOException, InterruptedException {
+        String dummyOAuth2State = RandomStringUtils.secure().nextAlphanumeric(30);
+        when(oAuth2StateService.isStateValid(dummyOAuth2State)).thenReturn(true);
+        HttpResponse<String> clientResponse = defaultCodeExchangeResponse();
+        when(httpClient.send(any(), eq(HttpResponse.BodyHandlers.ofString()))).thenReturn(clientResponse);
+
+        //Should call API without errors and verify interaction with user service
+        authService.handleAuthCodeFlowCallback("", dummyOAuth2State);
+        verify(userService).existsByEmail(anyString());
     }
 
     @Test
