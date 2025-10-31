@@ -8,6 +8,7 @@ import com.turing.google_oauth.user.User;
 import com.turing.google_oauth.user.UserService;
 import com.turing.google_oauth.util.JwtUtils;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -56,6 +57,7 @@ public class AuthService {
                 .queryParam(RESPONSE_TYPE_LITERAL, "code")
                 .queryParam(SCOPE_LITERAL, oauth2Scopes)
                 .queryParam(STATE_LITERAL, state)
+                .queryParam("access_type", "offline")
                 .build()
                 .toUri();
     }
@@ -88,6 +90,7 @@ public class AuthService {
             String claims = JwtUtils.getClaims(openIdResponse.identityToken);
             openIdUser = objectMapper.readValue(claims, OpenIdUser.class);
             openIdUser.accessToken = openIdResponse.accessToken;
+            openIdUser.refreshToken = openIdResponse.refreshToken;
         } catch (IOException | InterruptedException ex) {
             throw new RuntimeException(ex);
         }
@@ -109,6 +112,9 @@ public class AuthService {
         User user = userService.findByEmail(openIdUser.email);
         user.weakToken = weakToken;
         user.oauthAccessToken = openIdUser.accessToken;
+        if (StringUtils.isNotBlank(openIdUser.refreshToken)) {
+            user.oauthRefreshToken = openIdUser.refreshToken;
+        }
         userService.updateToken(user, weakToken);
         return user;
     }
@@ -121,6 +127,7 @@ public class AuthService {
         user.profilePictureUrl = openIdUser.profilePicturePath;
         user.weakToken = weakToken;
         user.oauthAccessToken = openIdUser.accessToken;
+        user.oauthRefreshToken = openIdUser.refreshToken;
         return userService.createUser(user);
     }
 

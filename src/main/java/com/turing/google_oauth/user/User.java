@@ -34,6 +34,9 @@ public class User {
     @Column(name = "oauth_access_token", columnDefinition = "TEXT")
     public String oauthAccessToken;
 
+    @Column(name = "oauth_refresh_token", columnDefinition = "TEXT")
+    public String oauthRefreshToken;
+
     @CreationTimestamp
     @Column(name = "created_at")
     public LocalDateTime createdAt;
